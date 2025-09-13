@@ -1,9 +1,8 @@
-
 package Gui;
 
 import Logica.Producto;
 import java.sql.ResultSet;
-import java.sql.Connection; 
+import java.sql.Connection;
 import Persistencia.Conexion_BD;
 import Persistencia.CtrlProducto;
 import java.awt.Color;
@@ -18,17 +17,16 @@ import javax.swing.JOptionPane;
 public class InterProducto extends javax.swing.JInternalFrame {
 
     int objetoIdCatedoriaCombo = 0;
-    
+
     public InterProducto() {
         initComponents();
-        
-       this.setSize(new Dimension(400, 300));
-       this.setTitle("Nuevo Producto");
-       
-       this.CargarComboCategoria();
+
+        this.setSize(new Dimension(400, 300));
+        this.setTitle("Nuevo Producto");
+
+        this.CargarComboCategoria();
     }
 
- 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -121,23 +119,58 @@ public class InterProducto extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_jComboBoxCategoriaActionPerformed
 
     private void BtnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnGuardarActionPerformed
-        
+
         Producto producto = new Producto();
         CtrlProducto controlProducto = new CtrlProducto();
-        
-        String categoria= "";
-        
+
+     
+
         //validar campos
-        
         if (TxtNombre.getText().equals("") || TxtCantidad.getText().equals("") || TxtPrecio.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "Complete todos los campos");
             TxtNombre.setBackground(Color.red);
             TxtCantidad.setBackground(Color.red);
             TxtPrecio.setBackground(Color.red);
+
+        } else {
+            // consulta para ver si el producto ya existe
+            if (!controlProducto.ExisteProducto(TxtNombre.getText().trim())) {
+
+                try {
+                    producto.setNombre(TxtNombre.getText().trim());
+                    producto.setCantidad(Integer.parseInt(TxtCantidad.getText().trim()));
+                     producto.setDescripcion(TxtDescripcion.getText().trim());
+                      producto.setPrecio(Integer.parseInt(TxtPrecio.getText().trim()));
+
+                    //id categoria
+                    this.idCategoria();
+                    producto.setIdCategoria(objetoIdCatedoriaCombo);
+                    producto.setEstado(1);
+                    
+                    if (controlProducto.Guardar(producto)) {
+                        JOptionPane.showMessageDialog(null, "Registro Guardado");
+                        TxtNombre.setBackground(Color.GREEN);
+            TxtCantidad.setBackground(Color.GREEN);
+            TxtPrecio.setBackground(Color.GREEN);
+            TxtDescripcion.setBackground(Color.GREEN);
             
-        }else{}
-        // consulta para ver si el producto ya existe
-        
+            
+            this.jComboBoxCategoria.setSelectedItem("");
+            this.Limpiar();
+                        
+                    } else {
+                         JOptionPane.showMessageDialog(null, "Error al  Guardado");
+                    }
+
+                } catch (Exception e) {
+System.out.println("El producto ya existe en la base de datos");    
+                }
+
+            }
+            
+        }
+
+
     }//GEN-LAST:event_BtnGuardarActionPerformed
 
 
@@ -157,29 +190,57 @@ public class InterProducto extends javax.swing.JInternalFrame {
     private javax.swing.JLabel jLabelWallpaper;
     // End of variables declaration//GEN-END:variables
 
+    
+    
+    
+    //metodo para limpiar campos
+    private void Limpiar(){
+    TxtNombre.setText("");
+    TxtCantidad.setText("");
+    TxtPrecio.setText("");
+    TxtDescripcion.setText("");
+        
+    }
+    
+    
+    
+    
 //Metodos para cargar las categorias 
-private void CargarComboCategoria(){
+    private void CargarComboCategoria() {
 
-    String sql = "Select * from tb_categoria";
-   
-    
-    try (Connection cn =Conexion_BD.conectar()) {
-        PreparedStatement st = cn.prepareStatement(sql);
-       ResultSet rs= st.executeQuery();
-       jComboBoxCategoria.removeAllItems();
-       jComboBoxCategoria.addItem("Seleccione categoria:");
-        while (rs.next()) {
-             jComboBoxCategoria.addItem(rs.getString("Descripcion"));
-            
+        String sql = "Select * from tb_categoria";
+
+        try (Connection cn = Conexion_BD.conectar()) {
+            PreparedStatement st = cn.prepareStatement(sql);
+            ResultSet rs = st.executeQuery();
+            jComboBoxCategoria.removeAllItems();
+            jComboBoxCategoria.addItem("Seleccione categoria:");
+            while (rs.next()) {
+                jComboBoxCategoria.addItem(rs.getString("Descripcion"));
+
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error al cargar categoria");
         }
-     
-        
-        
-    } catch (Exception e) {
-        System.out.println("Error al cargar categoria");
     }
-    }
-    
-}
 
-    
+    //Obtener id categoria
+    private int idCategoria() {
+        String sql = "select * from tb_categoria where descripcion = '" + this.jComboBoxCategoria.getSelectedItem() + "'";
+        java.sql.Connection conexion = Conexion_BD.conectar();
+
+        try (PreparedStatement ps = conexion.prepareStatement(sql)) {
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                objetoIdCatedoriaCombo = rs.getInt("idCategoria");
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error al obtenes id categoria");
+        }
+        return objetoIdCatedoriaCombo;
+
+    }
+}
