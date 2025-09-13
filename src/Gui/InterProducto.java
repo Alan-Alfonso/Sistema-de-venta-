@@ -240,7 +240,7 @@ System.out.println("El producto ya existe en la base de datos");
         } catch (Exception e) {
             System.out.println("Error al obtenes id categoria");
         }
-        return objetoIdCatedoriaCombo;
+        return objetoIdCatedoriaCombo
        
 
     }
