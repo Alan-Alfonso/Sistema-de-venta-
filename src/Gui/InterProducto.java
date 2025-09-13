@@ -241,6 +241,7 @@ System.out.println("El producto ya existe en la base de datos");
             System.out.println("Error al obtenes id categoria");
         }
         return objetoIdCatedoriaCombo;
+        System.out.println("hola mundo");
 
     }
 }
