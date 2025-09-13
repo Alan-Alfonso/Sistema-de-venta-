@@ -17,7 +17,7 @@ public class CtrlProducto {
         boolean respuesta = false;
         java.sql.Connection conexion = Conexion_BD.conectar();
 
-        String sql = "INSERT INTO TB_Producto VALUES (?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO tb_producto VALUES (?,?,?,?,?,?,?)";
 
         try (PreparedStatement Consulta = conexion.prepareStatement(sql)) {
                 // Asignamos valores a los parámetros de la consulta
@@ -36,7 +36,8 @@ public class CtrlProducto {
             }
 
         } catch (SQLException e) {
-            System.out.println("Error al guardar Producto" + e);
+           System.out.println("Error al guardar Producto: " + e.getMessage());
+    e.printStackTrace(); // Esto te muestra la línea exacta que falla
         }
         return respuesta;
 
@@ -45,7 +46,7 @@ public class CtrlProducto {
     //revisar si el producto existe
   public boolean ExisteProducto(String Producto) {
     boolean respuesta = false;
-    String sql = "SELECT Nombre FROM Producto WHERE Nombre = ?";
+    String sql = "SELECT Nombre FROM tb_producto WHERE Nombre = ?";
     
     java.sql.Connection conexion = Conexion_BD.conectar(); 
     
