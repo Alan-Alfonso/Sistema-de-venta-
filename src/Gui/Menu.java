@@ -13,25 +13,64 @@ import javax.swing.JDesktopPane;
  */
 public class Menu extends javax.swing.JFrame {
     
-    public static JDesktopPane JDesktopPane_menu;
-
+     private InterGestionarProducto ventanaGestionarProducto;
+    private InterProducto ventanaRegistrarProducto;
     
+private JDesktopPane JDesktopPane_menu;
+
     public Menu() {
         initComponents();
-        this.setSize(new Dimension(1200,700));
+        this.setSize(new Dimension(1200, 700));
         this.setExtendedState(this.MAXIMIZED_BOTH);
         this.setLocationRelativeTo(null);
         this.setTitle("|Menu - Burbujitas|");
-        
-        
-       this.setLayout(new BorderLayout());
+
+        this.setLayout(new BorderLayout());
+
+        // Inicializar el escritorio
         JDesktopPane_menu = new JDesktopPane();
         JDesktopPane_menu.setBackground(new Color(255, 182, 170));
         this.setContentPane(JDesktopPane_menu);
         this.setJMenuBar(jMenuBar1);
-  
+
+        // Abrir ventana de gestión usando Singleton
+        ventanaGestionarProducto = InterGestionarProducto.getInstancia();
+        if (!ventanaGestionarProducto.isVisible()) {
+            JDesktopPane_menu.add(ventanaGestionarProducto);
+            centrarVentana(ventanaGestionarProducto);
+            ventanaGestionarProducto.setVisible(true);
+        } else {
+            ventanaGestionarProducto.toFront();
+        }
     }
-    
+
+    // Método para abrir la ventana de registro
+    public void abrirVentanaRegistrarProducto() {
+        if (ventanaRegistrarProducto == null || ventanaRegistrarProducto.isClosed()) {
+            ventanaRegistrarProducto = new InterProducto(ventanaGestionarProducto);
+            JDesktopPane_menu.add(ventanaRegistrarProducto);
+           
+            ventanaRegistrarProducto.setVisible(true);
+        } else {
+            ventanaRegistrarProducto.toFront();
+        }
+    }
+
+    // Método reutilizable para centrar ventanas
+    private void centrarVentana(JInternalFrame ventana) {
+      ventana.setVisible(true); // Asegura que el tamaño esté calculado
+    ventana.setSize(ventana.getPreferredSize()); // Opcional si no usás pack()
+
+    Dimension desktopSize = JDesktopPane_menu.getSize();
+    Dimension frameSize = ventana.getSize();
+
+    ventana.setLocation(
+        (desktopSize.width - frameSize.width) / 2,
+        (desktopSize.height - frameSize.height) / 2
+    );
+    }
+
+   
 
     
   
@@ -111,6 +150,11 @@ public class Menu extends javax.swing.JFrame {
         jMenuItemGestionProducto.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         jMenuItemGestionProducto.setText("Gestionar Productos");
         jMenuItemGestionProducto.setPreferredSize(new java.awt.Dimension(150, 30));
+        jMenuItemGestionProducto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemGestionProductoActionPerformed(evt);
+            }
+        });
         jMenuProductos.add(jMenuItemGestionProducto);
 
         jMenuItemActualizarProducto.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
@@ -281,10 +325,16 @@ public class Menu extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItemGestionarCategoriasActionPerformed
 
     private void jMenuItemNuevoProductoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemNuevoProductoActionPerformed
-              InterProducto interProducto = new  InterProducto();
+              InterProducto interProducto = new  InterProducto(ventanaGestionarProducto);
         JDesktopPane_menu.add(interProducto);
         interProducto.setVisible(true);
     }//GEN-LAST:event_jMenuItemNuevoProductoActionPerformed
+
+    private void jMenuItemGestionProductoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemGestionProductoActionPerformed
+        InterGestionarProducto interGestionarProducto = new  InterGestionarProducto();
+        JDesktopPane_menu.add(interGestionarProducto);
+        interGestionarProducto.setVisible(true);
+    }//GEN-LAST:event_jMenuItemGestionProductoActionPerformed
 
     /**
      * @param args the command line arguments
