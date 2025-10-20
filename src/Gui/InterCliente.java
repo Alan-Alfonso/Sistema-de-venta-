@@ -12,9 +12,11 @@ import javax.swing.JOptionPane;
  * @author alana
  */
 public class InterCliente extends javax.swing.JInternalFrame {
+    private InterGestionarCliente gestionarCliente;
 
     public InterCliente(InterGestionarProducto gestionarProducto) {
-
+        
+     this.gestionarCliente = gestionarCliente;
         initComponents();
         this.setSize(new Dimension(400, 300));
         this.setTitle("Nuevo Cliente");
@@ -99,55 +101,71 @@ public class InterCliente extends javax.swing.JInternalFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void BtnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnGuardarActionPerformed
+Cliente cliente = new Cliente();
+    CtrlCliente controlCliente = new CtrlCliente();
 
-        Cliente cliente = new Cliente();
-        CtrlCliente controlCliente = new CtrlCliente();
+    // Validar campos obligatorios
+    if (TxtNombre.getText().isEmpty()
+            || TxtApellido.getText().isEmpty()
+            || TxtDNI.getText().isEmpty()
+            || TxtTelefono.getText().isEmpty()
+            || TxtDireccion.getText().isEmpty()) {
 
-        if (!TxtNombre.getText().isEmpty()
-                && !TxtApellido.getText().isEmpty()
-                && !TxtDNI.getText().isEmpty()
-                && !TxtTelefono.getText().isEmpty()
-                && !TxtDireccion.getText().isEmpty()) {
+        JOptionPane.showMessageDialog(null, "Complete todos los campos");
+        TxtNombre.setBackground(Color.RED);
+        TxtApellido.setBackground(Color.RED);
+        TxtDNI.setBackground(Color.RED);
+        TxtTelefono.setBackground(Color.RED);
+        TxtDireccion.setBackground(Color.RED);
+        return;
+    }
 
-            if (!controlCliente.ExisteCliente(TxtDNI.getText().trim())) {
+    // Validar que el DNI sea numérico
+    try {
+        Integer.parseInt(TxtDNI.getText().trim());
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(null, "El DNI debe ser un número válido");
+        TxtDNI.setBackground(Color.RED);
+        return;
+    }
 
-                cliente.setNombre(TxtNombre.getText().trim());
-                cliente.setApellido(TxtApellido.getText().trim());
-                cliente.setDni(TxtDNI.getText().trim());
-                cliente.setTelefono(TxtTelefono.getText().trim());
-                cliente.setDireccion(TxtDireccion.getText().trim());
-                cliente.setEstado(0);
+    // Verificar si el cliente ya existe
+    if (controlCliente.ExisteCliente(TxtDNI.getText().trim())) {
+        JOptionPane.showMessageDialog(null, "El cliente ya está registrado en la base de datos");
+        return;
+    }
 
-                if (controlCliente.Guardar(cliente)) {
-                    JOptionPane.showMessageDialog(null, "Cliente guardado");
-                    TxtNombre.setBackground(Color.GREEN);
-                    TxtApellido.setBackground(Color.GREEN);
-                    TxtDNI.setBackground(Color.GREEN);
-                    TxtTelefono.setBackground(Color.GREEN);
-                    TxtDireccion.setBackground(Color.GREEN);
-                } else {
-                    JOptionPane.showMessageDialog(null, "Error al guardar");
-                }
+    // Construir objeto cliente
+    cliente.setNombre(TxtNombre.getText().trim());
+    cliente.setApellido(TxtApellido.getText().trim());
+    cliente.setDni(TxtDNI.getText().trim());
+    cliente.setTelefono(TxtTelefono.getText().trim());
+    cliente.setDireccion(TxtDireccion.getText().trim());
+    cliente.setEstado(0);
 
-            } else {
-                JOptionPane.showMessageDialog(null, "El cliente ya esta registrado en la base de datos");
-            }
-        } else {
-            JOptionPane.showMessageDialog(null, "Complete todos los campos");
-            TxtNombre.setBackground(Color.red);
-            TxtApellido.setBackground(Color.red);
-            TxtDNI.setBackground(Color.red);
-            TxtTelefono.setBackground(Color.red);
-            TxtDireccion.setBackground(Color.red);
-        }
+    // Guardar cliente
+    if (controlCliente.Guardar(cliente)) {
+        JOptionPane.showMessageDialog(null, "Cliente guardado");
+        TxtNombre.setBackground(Color.GREEN);
+        TxtApellido.setBackground(Color.GREEN);
+        TxtDNI.setBackground(Color.GREEN);
+        TxtTelefono.setBackground(Color.GREEN);
+        TxtDireccion.setBackground(Color.GREEN);
+        
+        if (gestionarCliente != null) {
+    gestionarCliente.CargarTablaCliente();
+    }
 
         this.Limpiar();
-                
-                TxtNombre.setBackground(Color.white);
-                TxtApellido.setBackground(Color.white);
-                TxtDNI.setBackground(Color.white);
-                TxtTelefono.setBackground(Color.white);
-                TxtDireccion.setBackground(Color.white);
+
+        TxtNombre.setBackground(Color.WHITE);
+        TxtApellido.setBackground(Color.WHITE);
+        TxtDNI.setBackground(Color.WHITE);
+        TxtTelefono.setBackground(Color.WHITE);
+        TxtDireccion.setBackground(Color.WHITE);
+    } else {
+        JOptionPane.showMessageDialog(null, "Error al guardar");
+    }
 
     }//GEN-LAST:event_BtnGuardarActionPerformed
 

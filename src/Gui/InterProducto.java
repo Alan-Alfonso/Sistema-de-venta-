@@ -16,16 +16,21 @@ import javax.swing.JOptionPane;
  */
 public class InterProducto extends javax.swing.JInternalFrame {
 
-    int objetoIdCatedoriaCombo = 0;
+    private InterGestionarProducto gestionarProducto;
+int objetoIdCatedoriaCombo = 0;
 
-    public InterProducto() {
-        initComponents();
-
-        this.setSize(new Dimension(400, 300));
-        this.setTitle("Nuevo Producto");
-
-        this.CargarComboCategoria();
-    }
+public InterProducto(InterGestionarProducto gestionarProducto) {
+    
+    if (gestionarProducto == null) {
+    throw new IllegalArgumentException("La instancia de InterGestionarProducto no puede ser nula.");
+}
+    
+    this.gestionarProducto = gestionarProducto;
+    initComponents();
+    CargarComboCategoria();
+    this.setSize(new Dimension(400, 300));
+    this.setTitle("Nuevo Producto");
+}
 
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -121,55 +126,58 @@ public class InterProducto extends javax.swing.JInternalFrame {
     private void BtnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnGuardarActionPerformed
 
         Producto producto = new Producto();
-        CtrlProducto controlProducto = new CtrlProducto();
+    CtrlProducto controlProducto = new CtrlProducto();
 
-     
+    // Validar campos
+    if (TxtNombre.getText().equals("") || TxtCantidad.getText().equals("") || TxtPrecio.getText().equals("")) {
+        JOptionPane.showMessageDialog(null, "Complete todos los campos");
+        TxtNombre.setBackground(Color.red);
+        TxtCantidad.setBackground(Color.red);
+        TxtPrecio.setBackground(Color.red);
+        return;
+    }
 
-        //validar campos
-        if (TxtNombre.getText().equals("") || TxtCantidad.getText().equals("") || TxtPrecio.getText().equals("")) {
-            JOptionPane.showMessageDialog(null, "Complete todos los campos");
-            TxtNombre.setBackground(Color.red);
-            TxtCantidad.setBackground(Color.red);
-            TxtPrecio.setBackground(Color.red);
+    if (jComboBoxCategoria.getSelectedItem().equals("Seleccione categoria:")) {
+        JOptionPane.showMessageDialog(null, "Seleccione una categoría válida.");
+        return;
+    }
 
-        } else {
-            // consulta para ver si el producto ya existe
-            if (!controlProducto.ExisteProducto(TxtNombre.getText().trim())) {
+    // Verificar si el producto ya existe
+    if (controlProducto.ExisteProducto(TxtNombre.getText().trim())) {
+        JOptionPane.showMessageDialog(null, "El producto ya existe.");
+        return;
+    }
 
-                try {
-                    producto.setNombre(TxtNombre.getText().trim());
-                    producto.setCantidad(Integer.parseInt(TxtCantidad.getText().trim()));
-                     producto.setDescripcion(TxtDescripcion.getText().trim());
-                      producto.setPrecio(Integer.parseInt(TxtPrecio.getText().trim()));
+    try {
+        producto.setNombre(TxtNombre.getText().trim());
+        producto.setCantidad(Integer.parseInt(TxtCantidad.getText().trim()));
+        producto.setDescripcion(TxtDescripcion.getText().trim());
+        producto.setPrecio(Integer.parseInt(TxtPrecio.getText().trim()));
+        producto.setIdCategoria(idCategoria()); // método que ya tenés
+        producto.setEstado(1);
 
-                    //id categoria
-                    this.idCategoria();
-                    producto.setIdCategoria(objetoIdCatedoriaCombo);
-                    producto.setEstado(1);
-                    
-                    if (controlProducto.Guardar(producto)) {
-                        JOptionPane.showMessageDialog(null, "Registro Guardado");
-                        TxtNombre.setBackground(Color.GREEN);
+        if (controlProducto.Guardar(producto)) {
+            JOptionPane.showMessageDialog(null, "Registro Guardado");
+
+            // Actualizar tabla en InterGestionarProducto
+            if (gestionarProducto != null) {
+    gestionarProducto.CargarTablaProducto();
+}
+
+            Limpiar(); // método que ya tenés
+            TxtNombre.setBackground(Color.GREEN);
             TxtCantidad.setBackground(Color.GREEN);
             TxtPrecio.setBackground(Color.GREEN);
             TxtDescripcion.setBackground(Color.GREEN);
-            
-            
-            this.jComboBoxCategoria.setSelectedItem("");
-            this.Limpiar();
-                        
-                    } else {
-                         JOptionPane.showMessageDialog(null, "Error al  Guardado");
-                    }
-
-                } catch (Exception e) {
-System.out.println("El producto ya existe en la base de datos");    
-                }
-
-            }
-            
+            jComboBoxCategoria.setSelectedIndex(0);
+        } else {
+            JOptionPane.showMessageDialog(null, "Error al guardar el producto.");
         }
 
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(null, "Error al procesar el producto: " + e.getMessage());
+        e.printStackTrace();
+    }
 
     }//GEN-LAST:event_BtnGuardarActionPerformed
 

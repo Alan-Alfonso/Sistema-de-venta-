@@ -13,6 +13,8 @@ public class InterCategoria extends javax.swing.JInternalFrame {
         initComponents();
         this.setSize(new Dimension (400, 200));
         this.setTitle("Nueva Categoria");
+        
+
     }
 
     @SuppressWarnings("unchecked")

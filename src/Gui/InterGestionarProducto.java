@@ -9,6 +9,7 @@ import java.awt.Color;
 
 import java.sql.Connection;
 import java.awt.Dimension;
+import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.security.interfaces.RSAKey;
@@ -20,6 +21,8 @@ import javax.swing.table.DefaultTableModel;
 import java.sql.ResultSet;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
 
 import javax.swing.JOptionPane;
 
@@ -33,19 +36,27 @@ public class InterGestionarProducto extends javax.swing.JInternalFrame {
     private int idProducto;
     int obtenerIdCategoriaCombo = 0;
 
+    private static InterGestionarProducto instancia;
+
+    public static InterGestionarProducto getInstancia() {
+        if (instancia == null || instancia.isClosed()) {
+            instancia = new InterGestionarProducto();
+        }
+        return instancia;
+    }
+
     public InterGestionarProducto() {
+
+        instancia = this;
+
         initComponents();
         this.setSize(new Dimension(900, 500));
         this.setTitle("Gestionar Productos");
 
         this.CargarTablaProducto();
+        
 
-        ImageIcon wallpaper = new ImageIcon("/img/fondo3.jpg");
-        Icon icono = new ImageIcon(wallpaper.getImage().getScaledInstance(900, 500, WIDTH));
-        this.repaint();
 
-        this.CargarTablaProducto();
-        this.CargarComboProducto();
     }
 
     @SuppressWarnings("unchecked")
@@ -196,6 +207,8 @@ public class InterGestionarProducto extends javax.swing.JInternalFrame {
         jPanel3.add(TxtDescripcion, new org.netbeans.lib.awtextra.AbsoluteConstraints(410, 40, 170, -1));
 
         getContentPane().add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 330, 870, 100));
+
+        jLabelWallpaper.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Img/Recurso Imagenes del Sistema/fondo3.1.jpg"))); // NOI18N
         getContentPane().add(jLabelWallpaper, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 900, 480));
 
         pack();
@@ -220,62 +233,63 @@ public class InterGestionarProducto extends javax.swing.JInternalFrame {
         }
 
         try {
-             int idCat = idCategoria();
+            int idCat = idCategoria();
             if (idCat <= 0) {
                 JOptionPane.showMessageDialog(null, "Seleccione una categoría válida");
                 return;
             }
         } catch (Exception e) {
         }
-            try {
-                // Construir objeto Producto desde los campos del formulario
-                Producto producto = new Producto();
-                producto.setIdProducto(idProducto); // Este valor debe estar definido previamente
-                producto.setNombre(TxtNombre.getText().trim());
-                producto.setCantidad(Integer.parseInt(TxtCantidad.getText().trim()));
-                producto.setDescripcion(TxtDescripcion.getText().trim());
-                producto.setPrecio(Integer.parseInt(TxtPrecio.getText().trim()));
+        try {
+            // Construir objeto Producto desde los campos del formulario
+            Producto producto = new Producto();
+            producto.setIdProducto(idProducto); // Este valor debe estar definido previamente
+            producto.setNombre(TxtNombre.getText().trim());
+            producto.setCantidad(Integer.parseInt(TxtCantidad.getText().trim()));
+            producto.setDescripcion(TxtDescripcion.getText().trim());
+            producto.setPrecio(Integer.parseInt(TxtPrecio.getText().trim()));
 
-                // Obtener ID de categoría desde el combo
-                producto.setIdCategoria(idCategoria());
-                producto.setEstado(1); // Estado activo
+            // Obtener ID de categoría desde el combo
+            producto.setIdCategoria(idCategoria());
+            producto.setEstado(1); // Estado activo
 
-                // Intentar actualizar en la base de datos
-                if (controlProducto.Actualizar(producto, idProducto)) {
-                    JOptionPane.showMessageDialog(null, "Producto actualizado correctamente");
+            // Intentar actualizar en la base de datos
+            if (controlProducto.Actualizar(producto, idProducto)) {
+                JOptionPane.showMessageDialog(null, "Producto actualizado correctamente");
 
-                    // Refrescar tabla y limpiar formulario
-                    this.CargarTablaProducto();
-                    this.jComboBoxCategoria.setSelectedItem("");
-                    this.Limpiar();
-                } else {
-                    JOptionPane.showMessageDialog(null, "Error al actualizar el producto");
-                }
-
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(null, "Error al actualizar: " + e.getMessage());
-                System.out.println("Error al actualizar: " + e.getMessage());
+                // Refrescar tabla y limpiar formulario
+                this.CargarTablaProducto();
+                this.jComboBoxCategoria.setSelectedItem("");
+                this.Limpiar();
+            } else {
+                JOptionPane.showMessageDialog(null, "Error al actualizar el producto");
             }
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al actualizar: " + e.getMessage());
+            System.out.println("Error al actualizar: " + e.getMessage());
+        }
 
     }//GEN-LAST:event_BtnActualizarActionPerformed
 
     private void BtnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnEliminarActionPerformed
         CtrlProducto controlProducto = new CtrlProducto();
-        if (idProducto == 0) {
-            JOptionPane.showMessageDialog(null, "Seleccione un producto");
+        if (idProducto > 0) {
+            CtrlProducto control = new CtrlProducto();
+            boolean eliminado = control.Eliminar(idProducto);
 
-        } else {
-            if (!controlProducto.Eliminar(idProducto)) {
-                JOptionPane.showMessageDialog(null, "Producto Eliminado.");
-                this.CargarTablaProducto();
-                this.CargarComboProducto();
-                this.Limpiar();
+            System.out.println("¿Se eliminó? " + eliminado); // 👈 debug
 
+            if (eliminado) {
+                JOptionPane.showMessageDialog(null, "Producto eliminado.");
+                CargarTablaProducto();
+                Limpiar();
+                idProducto = 0;
             } else {
-                JOptionPane.showMessageDialog(null, "Error al eliminar producto!");
-
+                JOptionPane.showMessageDialog(null, "Error al eliminar producto.");
             }
-
+        } else {
+            JOptionPane.showMessageDialog(null, "Seleccione un producto válido.");
         }
 
 
@@ -313,7 +327,8 @@ public class InterGestionarProducto extends javax.swing.JInternalFrame {
         TxtNombre.setText("");
         TxtPrecio.setText("");
         TxtDescripcion.setText("");
-        TxtPrecio.setText("");
+        TxtCantidad.setText("");
+        jComboBoxCategoria.setSelectedIndex(0);
 
         jComboBoxCategoria.setSelectedItem("Seleccione Categoria");
 
@@ -348,7 +363,7 @@ public class InterGestionarProducto extends javax.swing.JInternalFrame {
     String descripcioncategoria = "";
     int Precio = 0;
 
-    private void CargarTablaProducto() {
+    public void CargarTablaProducto() {
         java.sql.Connection conexion = Conexion_BD.conectar();
         DefaultTableModel model = new DefaultTableModel();
         String sql = "SELECT p.idproducto, p.Nombre, p.Cantidad, p.Precio, p.Descripcion, c.Descripcion, p.Estado\n"
@@ -391,33 +406,41 @@ public class InterGestionarProducto extends javax.swing.JInternalFrame {
 
         //Enviar Descripcion de la Producto seleccionada 
         jTableProductos.addMouseListener(new MouseAdapter() {
-
             @Override
             public void mouseClicked(MouseEvent e) {
-                int FilaPoint = jTableProductos.rowAtPoint(e.getPoint());
-                int ColumnaPoint = 0;
+                int fila = jTableProductos.rowAtPoint(e.getPoint());
+                System.out.println("Fila clickeada: " + fila);
 
-                if (FilaPoint > -1) {
+                if (fila > -1) {
                     DefaultTableModel model = (DefaultTableModel) jTableProductos.getModel();
-                    Object valor = model.getValueAt(FilaPoint, ColumnaPoint);
+                    Object valorID = model.getValueAt(fila, 0); // columna 0 = ID
+                    System.out.println("Valor en columna 0: " + valorID);
 
-                    if (valor != null && valor instanceof Integer) {
-                        idProducto = (Integer) valor;
+                    if (valorID != null) {
+                        try {
+                            idProducto = Integer.parseInt(valorID.toString());
+                            System.out.println("ID capturado: " + idProducto);
 
-                        // Cargar datos en los campos del formulario
-                        TxtNombre.setText(model.getValueAt(FilaPoint, 1).toString());
-                        TxtCantidad.setText(model.getValueAt(FilaPoint, 2).toString());
-                        TxtPrecio.setText(model.getValueAt(FilaPoint, 3).toString());
-                        TxtDescripcion.setText(model.getValueAt(FilaPoint, 4).toString());
-                        jComboBoxCategoria.setSelectedItem(model.getValueAt(FilaPoint, 5).toString());
+                            // Cargar campos
+                            TxtNombre.setText(model.getValueAt(fila, 1).toString());
+                            TxtCantidad.setText(model.getValueAt(fila, 2).toString());
+                            TxtPrecio.setText(model.getValueAt(fila, 3).toString());
+                            TxtDescripcion.setText(model.getValueAt(fila, 4).toString());
+                            jComboBoxCategoria.setSelectedItem(model.getValueAt(fila, 5).toString());
 
-                        // Si tenés lógica adicional para enviar datos, la mantenés
-                        EnviarDatosProductoSeleccionado(idProducto);
+                            EnviarDatosProductoSeleccionado(idProducto);
 
+                        } catch (Exception ex) {
+                            JOptionPane.showMessageDialog(null, "Error al obtener el ID: " + ex.getMessage());
+                            ex.printStackTrace();
+                        }
                     } else {
                         JOptionPane.showMessageDialog(null, "No se pudo obtener el ID del producto.");
                     }
+                } else {
+                    System.out.println("No se detectó ninguna fila.");
                 }
+                System.out.println("Tabla actualizada desde InterProducto");
             }
 
         });
